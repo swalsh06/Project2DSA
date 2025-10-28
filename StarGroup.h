@@ -8,11 +8,11 @@
 #include <string>
 #include "star.h"
 
-class starGroup {
-  vector<star> stars;
+class StarGroup {
+  vector<Star> stars;
   public:
-    double degToRad(double deg);
-    double computeDistance(double parallaxMas);
+    StarGroup(vector<Star> s);
+    double calcDistance(int i, int j);
 };
 
 
