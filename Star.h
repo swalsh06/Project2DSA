@@ -11,6 +11,7 @@ class Star {
     long long id;
     int numId;
     double x, y, z;
+	double screenX, screenY;
     // ra: right ascension (sky longitude degrees)
     // dec: declination (sky latitude degrees)
     // parallax: apparent shift in position (milliarcseconds) - used to estimate distance

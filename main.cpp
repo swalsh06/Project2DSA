@@ -9,26 +9,16 @@ double degToRad(double deg){
 }
 
 int main() {
-  	/*  Drawing edges between stars
-		for(int i = 0; i < stars.size; i++){
-			for(int j = i + 1; j < stars.size(); j++){
-				// sg1 = whatever instance of StarGroup is being used
-				double distance = sg1.calcDistance(i,j);
-				if(distance < 5.0){
-					draw edge here
-				}
-			}
-		}
-  	 */
 	// Set of 100,000 stars roughly in a sphere of radius 100 pc centered on the sun
 	ifstream file("1761687300163O-result.csv");
 	string line;
     vector<Star> stars;
-
     int numStars = 400;
     int counter = 0;
+	getline(file, line);
     // Pull star data and make objects that are then pushed to the vector
     while (getline(file, line) && counter < numStars) {
+    	//cout << line << endl;
     	stringstream ss(line);
       	Star s(counter);
       	string token;
@@ -48,8 +38,6 @@ int main() {
       	s.setX(distance * cos(decRad) * cos(raRad));
       	s.setY(distance * cos(decRad) * sin(raRad));
       	s.setZ(distance * sin(decRad));
-
-        //s.setNumId(counter);
       	stars.push_back(s);
 
       	counter++;
@@ -57,7 +45,9 @@ int main() {
 
 
     StarGroup sg1(stars);
+	sg1.formAdjacencyList();
 
+	//sg1.printAdjacencyList();
 
     Display display;
 
@@ -65,7 +55,7 @@ int main() {
     std::vector<int> testPath = {2, 45, 77, 120, 300};
     display.setPath(testPath);
 
-    //display.start();
+    display.start();
     return 0;
 }
 
