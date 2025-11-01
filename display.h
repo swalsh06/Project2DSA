@@ -42,10 +42,14 @@ private:
     sf::RectangleShape sidebar;
     sf::Text title;
     sf::RectangleShape algo1Btn, algo2Btn, rand1Btn, rand2Btn, generateBtn;
-    sf::Text algo1Label, algo2Label, rand1Text, rand2Text, generateLabel;
+    sf::Text algo1Label, algo2Label, rand1Text, rand2Text, generateLabel, infoBox;
 
     // The visualized path
     sf::VertexArray path;
+
+    std::string selectedAlgorithm;
+    bool generateActive = false;
+
 
     void setupStars();
     void setupSidebar();

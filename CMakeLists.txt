@@ -16,3 +16,4 @@ add_executable(DSA_Project_2
 
 # Link to the SFML 3 targets
 target_link_libraries(DSA_Project_2 PRIVATE SFML::Graphics SFML::Window SFML::System)
+
