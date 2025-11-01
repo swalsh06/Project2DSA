@@ -2,7 +2,6 @@
 #include "StarGroup.h"
 #include "dijkstra.h"
 #include "display.h"
-#pragma once
 using namespace std;
 
 double degToRad(double deg){
@@ -29,9 +28,9 @@ int main() {
     int numStars = 400;
     int counter = 0;
     // Pull star data and make objects that are then pushed to the vector
-    while (getline(file, line) && count < numStars) {
+    while (getline(file, line) && counter < numStars) {
     	stringstream ss(line);
-      	Star s;
+      	Star s(counter);
       	string token;
       	getline(ss, token, ',');
       	s.setId(stoll(token));
@@ -50,7 +49,7 @@ int main() {
       	s.setY(distance * cos(decRad) * sin(raRad));
       	s.setZ(distance * sin(decRad));
 
-        s.setNumId(counter);
+        //s.setNumId(counter);
       	stars.push_back(s);
 
       	counter++;
@@ -66,7 +65,7 @@ int main() {
     std::vector<int> testPath = {2, 45, 77, 120, 300};
     display.setPath(testPath);
 
-    display.start();
+    //display.start();
     return 0;
 }
 

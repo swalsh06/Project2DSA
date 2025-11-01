@@ -7,6 +7,9 @@
 #include "Star.h"
 using namespace std;
 
+Star::Star(int c) {
+  numId = c;
+}
 void Star::setId(long long id){
   this->id = id;
 }

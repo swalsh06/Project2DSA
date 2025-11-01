@@ -1,11 +1,5 @@
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <vector>
 #include <cmath>
-#include <string>
 #include "StarGroup.h"
-#include "Star.h"
 using namespace std;
 
 StarGroup::StarGroup(vector<Star> s){

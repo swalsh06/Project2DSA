@@ -1,5 +1,6 @@
 #ifndef STARGROUP_H
 #define STARGROUP_H
+#pragma once
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -7,6 +8,7 @@
 #include <cmath>
 #include <string>
 #include "star.h"
+using namespace std;
 
 class StarGroup {
   vector<Star> stars;
