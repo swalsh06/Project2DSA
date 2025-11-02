@@ -28,7 +28,7 @@ int main() {
 
     StarGroup sg1(lines, numStars);
 
-    //sg1.printAdjacencyList();
+    sg1.printAdjacencyList();
 
     Display display(stars);
     std::cout << "Loaded " << stars.size() << " stars\n";

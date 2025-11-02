@@ -13,6 +13,7 @@ using namespace std;
 
 class StarGroup {
     vector<Star> stars;
+    vector<vector<Star>> connectedStars;
     unordered_map<int, vector<pair<int, float>>> adjacencyList;
     unordered_map<int, pair<double, double>> starPositions;
     int nodesExplored;

@@ -51,6 +51,10 @@ StarGroup::StarGroup(vector<string> lines, int numStars){
     nodesExplored = 0;
 }
 
+double StarGroup::degToRad(double deg) {
+    return deg * M_PI / 180.0;
+}
+
 //Calculates Euclidean distance
 double StarGroup::calcDistance(int i, int j){
   double dx = stars[i].getX() - stars[j].getX();
@@ -74,6 +78,8 @@ void StarGroup::printAdjacencyList() {
   }
 }
 
+
+
 void StarGroup::formAdjacencyList() {
   for(int i = 0; i < stars.size(); i++){
     for(int j = 0; j < stars.size(); j++){
@@ -81,7 +87,11 @@ void StarGroup::formAdjacencyList() {
       if (i != j){
         float distance = calcDistance(i,j);
         if(distance < 5.0){
-          adjacencyList[i].push_back({j, distance});
+            adjacencyList[i].push_back({j, distance});
+            vector<Star> starPair;
+            starPair.push_back(stars[i]);
+            starPair.push_back(stars[j]);
+            connectedStars.push_back(starPair);
         }
       }
     }
