@@ -32,7 +32,12 @@ Display::Display(const std::vector<Star>& dataStars)
   infoText(font, "", 14),
   rand1Value(font, "", 14),
   rand2Value(font, "", 14),
-  selectedAlgorithm("")
+  selectedAlgorithm(""),
+  starCountInput(font,"", 16),
+starCountLabel(font, "", 16),
+numStars(200),                  // ✅ default
+  isTypingStarCount(false)        // ✅ default
+
 {
     this->dataStars = dataStars;
     window.setFramerateLimit(60);
@@ -140,28 +145,27 @@ void Display::setupSidebar() {
     sidebar.setSize({200.f, 600.f});
     sidebar.setFillColor(sf::Color(180, 180, 200));
 
-    title.setString("Pick which\nalgorithm to use");
+    title.setString("Pick an algorithm");
     title.setFillColor(sf::Color::Black);
     title.setStyle(sf::Text::Bold);
     title.setPosition({20.f, 20.f});
 
     algo1Btn.setSize({80.f, 30.f});
     algo1Btn.setFillColor(sf::Color::White);
-    algo1Btn.setPosition({20.f, 100.f});
+    algo1Btn.setPosition({20.f, 60.f});
 
     algo2Btn.setSize({80.f, 30.f});
     algo2Btn.setFillColor(sf::Color::White);
-    algo2Btn.setPosition({115.f, 100.f});
+    algo2Btn.setPosition({115.f, 60.f});
 
     algo1Label.setString("Dijkstra");
     algo1Label.setFillColor(sf::Color::Black);
     algo1Label.setStyle(sf::Text::Bold);
-    algo1Label.setPosition({28.f, 106.f});
-
+    algo1Label.setPosition({28.f, 63.f});
     algo2Label.setString("A* Search");
     algo2Label.setFillColor(sf::Color::Black);
     algo2Label.setStyle(sf::Text::Bold);
-    algo2Label.setPosition({118.f, 106.f});
+    algo2Label.setPosition({118.f, 64.f});
 
     rand1Text.setString("Random\nstar 1");
     rand1Text.setFillColor(sf::Color::Black);
@@ -221,6 +225,23 @@ void Display::setupSidebar() {
     rand2Value.setPosition({120.f, 252.f});
     rand2Value.setString("");
 
+    //starCountLabel.setString("Number of Stars:", font, 16);
+    starCountLabel.setFillColor(sf::Color::Black);
+    starCountLabel.setStyle(sf::Text::Bold);
+    starCountLabel.setPosition({20.f, 460.f});
+
+    // Input box
+    inputBox.setSize({100.f, 30.f});
+    inputBox.setFillColor(sf::Color::White);
+    inputBox.setOutlineColor(sf::Color::Black);
+    inputBox.setOutlineThickness(1.f);
+    inputBox.setPosition({40.f, 490.f});
+
+    // Text inside box
+    //starCountInput = sf::Text(std::to_string(numStars), font, 16);
+    starCountInput.setFillColor(sf::Color::Black);
+    starCountInput.setPosition({50.f, 493.f});
+
 
 }
 
@@ -242,6 +263,9 @@ void Display::drawSidebar() {
     window.draw(generateLabel);
     window.draw(infoBox);
     window.draw(infoText);
+    window.draw(starCountLabel);
+    window.draw(inputBox);
+    window.draw(starCountInput);
 
 }
 
@@ -270,35 +294,81 @@ void Display::start() {
     while (window.isOpen()) {
         // ---------------- HANDLE EVENTS ----------------
         while (auto event = window.pollEvent()) {
-            if (event->is<sf::Event::Closed>())
-                window.close();
+    if (event->is<sf::Event::Closed>())
+        window.close();
 
-            if (event->is<sf::Event::MouseButtonPressed>()) {
-                auto mouseEvent = event->getIf<sf::Event::MouseButtonPressed>();
-                sf::Vector2f mousePos = window.mapPixelToCoords({mouseEvent->position.x, mouseEvent->position.y});
+    // --- Handle Mouse Clicks ---
+    if (event->is<sf::Event::MouseButtonPressed>()) {
+        auto mouseEvent = event->getIf<sf::Event::MouseButtonPressed>();
+        sf::Vector2f mousePos = window.mapPixelToCoords({mouseEvent->position.x, mouseEvent->position.y});
 
-                if (algo1Btn.getGlobalBounds().contains(mousePos)) {
-                    selectedAlgorithm = "Dijkstra";
-                    generateActive = false;
-                    std::cout << "Selected Dijkstra!\n";
-                }
-                else if (algo2Btn.getGlobalBounds().contains(mousePos)) {
-                    selectedAlgorithm = "A* Search";
-                    generateActive = false;
-                    std::cout << "Selected A* Search!\n";
-                }
-                else if (generateBtn.getGlobalBounds().contains(mousePos)) {
-                    if (!selectedAlgorithm.empty()) {
-                        generateActive = true;
-                        std::cout << "Generating path using " << selectedAlgorithm << "...\n";
-                        connectTwoRandomStars();
-                    } else {
-                        std::cout << "Please select an algorithm first!\n";
-                    }
-                }
+        // Input box focus
+        if (inputBox.getGlobalBounds().contains(mousePos)) {
+            isTypingStarCount = true;
+            inputBox.setOutlineColor(sf::Color(100, 100, 255)); // blue border
+        } else {
+            isTypingStarCount = false;
+            inputBox.setOutlineColor(sf::Color::Black);
+        }
 
+        // Generate button
+        if (generateBtn.getGlobalBounds().contains(mousePos)) {
+            if (!selectedAlgorithm.empty()) {
+                generateActive = true;
+                std::cout << "Generating " << numStars << " stars...\n";
+                connectTwoRandomStars();
+            } else {
+                std::cout << "Please select an algorithm first!\n";
             }
         }
+
+        // Algorithm buttons
+        if (algo1Btn.getGlobalBounds().contains(mousePos)) {
+            selectedAlgorithm = "Dijkstra";
+            generateActive = false;
+            std::cout << "Selected Dijkstra!\n";
+        } else if (algo2Btn.getGlobalBounds().contains(mousePos)) {
+            selectedAlgorithm = "A* Search";
+            generateActive = false;
+            std::cout << "Selected A* Search!\n";
+        }
+    }
+
+    // --- Handle Keyboard Input ---
+    if (event->is<sf::Event::TextEntered>() && isTypingStarCount) {
+        auto textEvent = event->getIf<sf::Event::TextEntered>();
+        uint32_t unicode = textEvent->unicode;
+
+        if (unicode == 8) {  // backspace
+            std::string current = starCountInput.getString().toAnsiString();
+            if (!current.empty()) current.pop_back();
+            starCountInput.setString(current);
+        }
+        else if (unicode >= '0' && unicode <= '9') {  // digits only
+            std::string current = starCountInput.getString().toAnsiString();
+            current += static_cast<char>(unicode);
+            starCountInput.setString(current);
+        }
+        else if (unicode == 13) {  // enter key
+            std::string input = starCountInput.getString().toAnsiString();
+            if (!input.empty()) {
+                int entered = std::stoi(input);
+
+                // ✅ Limit between 20 and 500
+                if (entered < 20) entered = 20;
+                if (entered > 500) entered = 500;
+
+                numStars = entered;
+                starCountInput.setString(std::to_string(numStars));
+                std::cout << "✅ Number of stars set to " << numStars << "\n";
+            }
+
+            isTypingStarCount = false;
+            inputBox.setOutlineColor(sf::Color::Black);
+        }
+    }
+}
+
 
         // ---------------- HOVER LOGIC  ----------------
         sf::Vector2i pixelPos = sf::Mouse::getPosition(window);
