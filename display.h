@@ -1,7 +1,3 @@
-//
-// Created by Diya Patel on 10/28/25.
-//
-
 #ifndef DSA_PROJECT_2_DISPLAY_H
 #define DSA_PROJECT_2_DISPLAY_H
 
@@ -13,19 +9,17 @@
 #include <ctime>
 #include <optional>
 #include <cstdint>
+#include "star.h"
 
 class Display {
 public:
-    Display();
-
-    // renamed to feel like a visual loop
+    Display(const std::vector<Star>& dataStars);
     void start();
-
-    // 💡 New: this will be called by your backend to send you the path
     void setPath(const std::vector<int>& indices);
 
 private:
-    struct Star {
+
+    struct VisualStar {
         sf::ConvexShape shape;
         sf::CircleShape shadow;
         sf::Vector2f position;
@@ -35,22 +29,35 @@ private:
 
     sf::RenderWindow window;
     sf::Clock clock;
-    std::vector<Star> stars;
+    std::vector<VisualStar> stars;
+    sf::VertexArray path;
 
-    // Sidebar UI
+    // --- Sidebar UI ---
     sf::Font font;
     sf::RectangleShape sidebar;
     sf::Text title;
     sf::RectangleShape algo1Btn, algo2Btn, rand1Btn, rand2Btn, generateBtn;
     sf::Text algo1Label, algo2Label, rand1Text, rand2Text, generateLabel;
+    sf::RectangleShape infoBox;
+    sf::Text infoText;
+    sf::Text rand1Value;
+    sf::Text rand2Value;
 
-    // The visualized path
-    sf::VertexArray path;
 
-    void setupStars();
+    std::string selectedAlgorithm;
+    bool generateActive = false;
+
+    void setupStars(const std::vector<Star>& dataStars);
     void setupSidebar();
     void drawSidebar();
     void drawStars();
+
+    sf::ConvexShape makeStar(float radius, int points = 5);
+
+    void connectTwoRandomStars();
+    std::vector<Star> dataStars;
+
+
 };
 
-#endif //DSA_PROJECT_2_DISPLAY_H
+#endif // DSA_PROJECT_2_DISPLAY_H
