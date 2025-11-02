@@ -48,6 +48,7 @@ void StarGroup::formAdjacencyList() {
   }
 }
 
+// Dijkstra's algorithm
 // Returns shortest distances from start node to target node
 vector<int> StarGroup::dijkstra(const unordered_map<int, vector<pair<int,float>>>& graph, int start, int target){
 
@@ -103,13 +104,14 @@ vector<int> StarGroup::dijkstra(const unordered_map<int, vector<pair<int,float>>
     return path;
 };
 
-
+//heuristic for A*
 float StarGroup::heuristic(int from, int to, const unordered_map<int, pair<float,float>>& starPos) {
     auto [x1,y1] = starPos.at(from);
     auto [x2,y2] = starPos.at(to);
     return sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2));
 }
 
+// A* algorithm
 // Returns shortest distances from start node to target node using heuristic
 vector<int> StarGroup::a_star(const unordered_map<int, vector<pair<int,float>>>& graph, const unordered_map<int, pair<float,float>>& starPos, int start, int end) {
 

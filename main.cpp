@@ -1,6 +1,5 @@
 #include "star.h"
 #include "StarGroup.h"
-#include "dijkstra.h"
 #include "display.h"
 using namespace std;
 
