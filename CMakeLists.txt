@@ -17,8 +17,6 @@ find_package(SFML 3 REQUIRED COMPONENTS Graphics Window System)
 
 add_executable(Project2DSA
         main.cpp
-        dijkstra.cpp
-        dijkstra.h
         display.cpp
         display.h
         Star.cpp
