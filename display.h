@@ -42,6 +42,12 @@ private:
     sf::Text infoText;
     sf::Text rand1Value;
     sf::Text rand2Value;
+    sf::Text starCountLabel;
+    sf::Text starCountInput;
+    sf::RectangleShape inputBox;
+    bool isTypingStarCount = false;
+    int numStars = 400;  // default
+
 
 
     std::string selectedAlgorithm;
