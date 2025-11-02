@@ -22,18 +22,16 @@ Display::Display()
          sf::State::Windowed),
   font(),
   title(font, "", 20),
-  algo1Label(font, "", 16),
-  algo2Label(font, "", 14),
+  algo1Label(font, "", 12),
+  algo2Label(font, "", 12),
   rand1Text(font, "", 18),
   rand2Text(font, "", 18),
-  generateLabel(font, "", 18),
-  selectedAlgorithm(""),
-  infoBox(font, "", 20)
+  generateLabel(font, "", 18)
 {
     window.setFramerateLimit(60);
     std::srand(static_cast<unsigned>(std::time(nullptr)));
 
-    if (!font.openFromFile("resources/fonts/OpenSans.ttf")) {
+    if (!font.openFromFile("arial.ttf")) {
         std::cerr << "Failed to load font!" << std::endl;
     }
 
@@ -45,6 +43,7 @@ Display::Display()
 void Display::setupStars() {
     for (int i = 0; i < 300; ++i) {
         Star s;
+
         s.position = {
             static_cast<float>(std::rand() % 950 + 225),
             static_cast<float>(std::rand() % 550 + 25)
@@ -74,19 +73,18 @@ void Display::setupStars() {
     path.append(sf::Vertex(stars[endIndex].position,   sf::Color::Red));
 }
 
-// ---------------- SIDEBAR ----------------
+// ---------------- SIDEBAR ---------------- (IN PROGRESS)
 void Display::setupSidebar() {
     sidebar.setSize({200.f, 600.f});
     sidebar.setFillColor(sf::Color(180, 180, 200));
 
     title.setString("Pick which\nalgorithm to use");
     title.setFillColor(sf::Color::Black);
-    title.setStyle(sf::Text::Bold);
     title.setPosition({20.f, 20.f});
 
     algo1Btn.setSize({80.f, 30.f});
     algo1Btn.setFillColor(sf::Color::White);
-    algo1Btn.setPosition({20.f, 100.f});
+    algo1Btn.setPosition({25.f, 100.f});
 
     algo2Btn.setSize({80.f, 30.f});
     algo2Btn.setFillColor(sf::Color::White);
@@ -94,23 +92,19 @@ void Display::setupSidebar() {
 
     algo1Label.setString("Dijkstra");
     algo1Label.setFillColor(sf::Color::Black);
-    algo1Label.setStyle(sf::Text::Bold);
     algo1Label.setPosition({28.f, 106.f});
 
     algo2Label.setString("A* Search");
     algo2Label.setFillColor(sf::Color::Black);
-    algo2Label.setStyle(sf::Text::Bold);
     algo2Label.setPosition({118.f, 106.f});
 
     rand1Text.setString("Random\nstar 1");
     rand1Text.setFillColor(sf::Color::Black);
-    rand1Text.setStyle(sf::Text::Bold);
-    rand1Text.setPosition({20.f, 170.f});
+    rand1Text.setPosition({30.f, 170.f});
 
     rand2Text.setString("Random\nstar 2");
     rand2Text.setFillColor(sf::Color::Black);
-    rand2Text.setStyle(sf::Text::Bold);
-    rand2Text.setPosition({20.f, 240.f});
+    rand2Text.setPosition({30.f, 240.f});
 
     rand1Btn.setSize({70.f, 30.f});
     rand1Btn.setFillColor(sf::Color::White);
@@ -124,25 +118,15 @@ void Display::setupSidebar() {
     rand2Btn.setOutlineThickness(1.f);
     rand2Btn.setPosition({100.f, 250.f});
 
-    generateBtn.setSize({120.f, 40.f});
+    generateBtn.setSize({150.f, 40.f});
     generateBtn.setFillColor(sf::Color(240, 240, 240));
     generateBtn.setOutlineColor(sf::Color::Black);
     generateBtn.setOutlineThickness(1.f);
-    generateBtn.setPosition({40.f, 303.f});
+    generateBtn.setPosition({25.f, 330.f});
 
     generateLabel.setString("Generate");
     generateLabel.setFillColor(sf::Color::Black);
-    generateLabel.setStyle(sf::Text::Bold);
-    generateLabel.setPosition({60.f, 310.f});
-
-    // Placeholder box for info section
-    sf::RectangleShape infoBox;
-    infoBox.setSize({150.f, 100.f});
-    infoBox.setFillColor(sf::Color(230, 230, 240));
-    infoBox.setOutlineColor(sf::Color::Black);
-    infoBox.setOutlineThickness(1.f);
-    infoBox.setPosition({25.f, 390.f});
-
+    generateLabel.setPosition({60.f, 338.f});
 }
 
 void Display::drawSidebar() {
@@ -158,10 +142,7 @@ void Display::drawSidebar() {
     window.draw(rand2Btn);
     window.draw(generateBtn);
     window.draw(generateLabel);
-    window.draw(infoBox);
-
 }
-
 
 void Display::drawStars() {
     float time = clock.getElapsedTime().asSeconds();
@@ -183,75 +164,14 @@ void Display::drawStars() {
     window.draw(path);
 }
 
+// ---------------- MAIN LOOP ----------------
 void Display::start() {
     while (window.isOpen()) {
-        // ---------------- HANDLE EVENTS ----------------
         while (auto event = window.pollEvent()) {
             if (event->is<sf::Event::Closed>())
                 window.close();
-
-            if (event->is<sf::Event::MouseButtonPressed>()) {
-                auto mouseEvent = event->getIf<sf::Event::MouseButtonPressed>();
-                sf::Vector2f mousePos = window.mapPixelToCoords({mouseEvent->position.x, mouseEvent->position.y});
-
-                if (algo1Btn.getGlobalBounds().contains(mousePos)) {
-                    selectedAlgorithm = "Dijkstra";
-                    std::cout << "Selected Dijkstra!\n";
-                }
-                else if (algo2Btn.getGlobalBounds().contains(mousePos)) {
-                    selectedAlgorithm = "A* Search";
-                    std::cout << "Selected A* Search!\n";
-                }
-                else if (generateBtn.getGlobalBounds().contains(mousePos)) {
-                    if (!selectedAlgorithm.empty()) {
-                        generateActive = true;
-                        std::cout << "Generating path using " << selectedAlgorithm << "...\n";
-                        // TODO: connect with backend logic
-                    } else {
-                        std::cout << "Please select an algorithm first!\n";
-                    }
-                }
-
-            }
         }
 
-        // ---------------- HOVER LOGIC (before drawing) ----------------
-        sf::Vector2i pixelPos = sf::Mouse::getPosition(window);
-        sf::Vector2f worldPos = window.mapPixelToCoords(pixelPos);
-
-        sf::Color hoverColor(200, 200, 255);   // lighter blue for hover
-        sf::Color normalColor(255, 255, 255);  // default white
-        sf::Color selectedColor(150, 150, 255);// darker blue for selected
-        sf::Color generateNormal(240, 240, 240);
-
-        // reset all
-        algo1Btn.setFillColor(normalColor);
-        algo2Btn.setFillColor(normalColor);
-        generateBtn.setFillColor(generateNormal);
-
-        // highlight selected
-        // Highlight the selected algorithm
-        if (selectedAlgorithm == "Dijkstra")
-            algo1Btn.setFillColor(selectedColor);
-        else if (selectedAlgorithm == "A* Search")
-            algo2Btn.setFillColor(selectedColor);
-
-        // Highlight generate if it's active
-        if (generateActive)
-            generateBtn.setFillColor(selectedColor);
-
-
-        // apply hover (only if not already selected)
-        if (algo1Btn.getGlobalBounds().contains(worldPos) && selectedAlgorithm != "Dijkstra")
-            algo1Btn.setFillColor(hoverColor);
-
-        if (algo2Btn.getGlobalBounds().contains(worldPos) && selectedAlgorithm != "A* Search")
-            algo2Btn.setFillColor(hoverColor);
-
-        if (generateBtn.getGlobalBounds().contains(worldPos) && selectedAlgorithm != "Generate")
-            generateBtn.setFillColor(hoverColor);
-
-        // ---------------- DRAW FRAME ----------------
         window.clear(sf::Color(5, 10, 30));
         drawSidebar();
         drawStars();
@@ -259,8 +179,7 @@ void Display::start() {
     }
 }
 
-
-// ---------------- PATH DRAWING ----------------
+// To draw the algorithm’s path
 void Display::setPath(const std::vector<int>& indices) {
     path.clear();
     for (int idx : indices) {
@@ -269,3 +188,5 @@ void Display::setPath(const std::vector<int>& indices) {
         }
     }
 }
+
+
