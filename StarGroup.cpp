@@ -78,6 +78,7 @@ vector<int> StarGroup::dijkstra(int start, int target){
     unordered_map<int, int> prev;
 
     double infinity = numeric_limits<double>::infinity();
+    nodesExplored = 0;
 
     //set all distances to infinity
     for (auto& pair : adjacencyList) {
@@ -144,6 +145,7 @@ vector<int> StarGroup::a_star(int start, int end) {
     unordered_map<int,int> prev;
 
     double infinity = numeric_limits<double>::infinity();
+    nodesExplored = 0;
 
     for (auto& pair : adjacencyList) gScore[pair.first] = infinity;
     gScore[start] = 0;
@@ -179,4 +181,8 @@ vector<int> StarGroup::a_star(int start, int end) {
     reverse(path.begin(), path.end());
     return path;
 
+}
+
+int StarGroup::getNodesExplored() {
+    return nodesExplored;
 }

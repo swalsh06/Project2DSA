@@ -28,6 +28,7 @@ class StarGroup {
     vector<int> dijkstra(int start, int target);
     float heuristic(int from, int to);
     vector<int> a_star(int start, int end);
+    int getNodesExplored();
 };
 
 
