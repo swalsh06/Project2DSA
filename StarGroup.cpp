@@ -9,11 +9,13 @@
 
 using namespace std;
 
+//Constructor
 StarGroup::StarGroup(vector<Star> s){
   stars = s;
     nodesExplored = 0;
 }
 
+//Calculates Euclidean distance
 double StarGroup::calcDistance(int i, int j){
   double dx = stars[i].getX() - stars[j].getX();
   double dy = stars[i].getY() - stars[j].getY();
@@ -21,9 +23,11 @@ double StarGroup::calcDistance(int i, int j){
   return sqrt(dx*dx + dy*dy + dz*dz);
 }
 
+
 unordered_map<int, vector<pair<int, float>>> StarGroup::getAdjacencyList() {
   return adjacencyList;
 }
+
 
 void StarGroup::printAdjacencyList() {
   for (const auto& [f, tv] : adjacencyList) {
@@ -33,6 +37,7 @@ void StarGroup::printAdjacencyList() {
     }
   }
 }
+
 void StarGroup::formAdjacencyList() {
   for(int i = 0; i < stars.size(); i++){
     for(int j = 0; j < stars.size(); j++){
