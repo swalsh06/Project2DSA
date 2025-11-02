@@ -78,7 +78,9 @@ void StarGroup::printAdjacencyList() {
   }
 }
 
-
+vector<vector<Star>> StarGroup::getConnectedStars() {
+    return connectedStars;
+}
 
 void StarGroup::formAdjacencyList() {
   for(int i = 0; i < stars.size(); i++){
