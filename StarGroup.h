@@ -17,7 +17,8 @@ class StarGroup {
     map<int, vector<pair<int, float>>> adjacencyList;
     int nodesExplored;
   public:
-    StarGroup(vector<Star> s);
+    StarGroup(vector<string> lines, int numStars);
+    double degToRad(double deg);
     map<int, vector<pair<int, float>>> getAdjacencyList();
     void printAdjacencyList();
     void formAdjacencyList();
