@@ -20,6 +20,7 @@ class StarGroup {
   public:
     StarGroup(vector<string> lines, int numStars);
     double degToRad(double deg);
+    vector<Star> getStars();
     vector<vector<Star>> getConnectedStars();
     unordered_map<int, vector<pair<int, float>>> getAdjacencyList();
     void printAdjacencyList();

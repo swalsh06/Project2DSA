@@ -13,7 +13,6 @@ int main() {
     //     return 1;
     // }
 
-    vector<Star> stars;
 
     vector<string> lines;
     string line;
@@ -28,7 +27,9 @@ int main() {
 
     StarGroup sg1(lines, numStars);
 
+
     sg1.printAdjacencyList();
+    vector<Star> stars = sg1.getStars();
 
     Display display(stars);
     std::cout << "Loaded " << stars.size() << " stars\n";

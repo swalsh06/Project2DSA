@@ -55,6 +55,10 @@ double StarGroup::degToRad(double deg) {
     return deg * M_PI / 180.0;
 }
 
+vector<Star> StarGroup::getStars() {
+    return stars;
+}
+
 //Calculates Euclidean distance
 double StarGroup::calcDistance(int i, int j){
   double dx = stars[i].getX() - stars[j].getX();
