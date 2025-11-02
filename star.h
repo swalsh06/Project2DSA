@@ -25,16 +25,16 @@ class Star {
         void setRa(double ra);
         void setDec(double dec);
         void setParallax(double parallax);
-        long long getId();
-        int getNumId();
-        double getX();
-        double getY();
-        double getZ();
-        double getRa();
-        double getDec();
-        double getParallax();
+        long long getId() const;
+        int getNumId() const;
+        double getX() const;
+        double getY() const;
+        double getZ() const;
+        double getRa() const;
+        double getDec() const;
+        double getParallax() const;
 
-    	double computeDistance();
+    	double computeDistance() const;
 };
 
 

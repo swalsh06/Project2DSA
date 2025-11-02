@@ -12,7 +12,12 @@ find_package(SFML 3 COMPONENTS Graphics Window System REQUIRED)
 add_executable(DSA_Project_2
         main.cpp
         display.h
-        display.cpp)
+        display.cpp
+        star.h
+        star.cpp
+        StarGroup.h
+        StarGroup.cpp
+        dijkstra.cpp)
 
 # Link to the SFML 3 targets
 target_link_libraries(DSA_Project_2 PRIVATE SFML::Graphics SFML::Window SFML::System)

@@ -7,6 +7,10 @@
 #include "Star.h"
 using namespace std;
 
+Star::Star()
+    : id(0), numId(0), x(0), y(0), z(0), ra(0), dec(0), parallax(1) {}
+
+
 void Star::setId(long long id){
   this->id = id;
 }
@@ -39,38 +43,38 @@ void Star::setParallax(double parallax){
   this->parallax = parallax;
 }
 
-long long Star::getId(){
+long long Star::getId() const{
   return id;
 }
 
-int Star::getNumId(){
+int Star::getNumId() const{
   return numId;
 }
 
-double Star::getX(){
+double Star::getX() const{
   return x;
 }
 
-double Star::getY(){
+double Star::getY() const {
   return y;
 }
 
-double Star::getZ(){
+double Star::getZ() const {
   return z;
 }
 
-double Star::getRa(){
+double Star::getRa() const{
   return ra;
 }
 
-double Star::getDec(){
+double Star::getDec() const{
   return dec;
 }
 
-double Star::getParallax(){
+double Star::getParallax() const{
   return parallax;
 }
 
-double Star::computeDistance(){
+double Star::computeDistance() const{
     return 1000.0 / parallax;
 }
