@@ -43,7 +43,7 @@ numStars(200),                  // ✅ default
     window.setFramerateLimit(60);
     std::srand(static_cast<unsigned>(std::time(nullptr)));
 
-    if (!font.openFromFile("resources/fonts/OpenSans.ttf")) {
+    if (!font.openFromFile("OpenSans.ttf")) {
         std::cerr << "Failed to load font!" << std::endl;
     }
 

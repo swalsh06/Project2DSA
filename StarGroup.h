@@ -13,11 +13,14 @@ using namespace std;
 
 class StarGroup {
     vector<Star> stars;
+    vector<vector<Star>> connectedStars;
     unordered_map<int, vector<pair<int, float>>> adjacencyList;
     unordered_map<int, pair<double, double>> starPositions;
     int nodesExplored;
   public:
-    StarGroup(vector<Star> s);
+    StarGroup(vector<string> lines, int numStars);
+    double degToRad(double deg);
+    vector<vector<Star>> getConnectedStars();
     unordered_map<int, vector<pair<int, float>>> getAdjacencyList();
     void printAdjacencyList();
     void formAdjacencyList();
@@ -28,6 +31,7 @@ class StarGroup {
     vector<int> dijkstra(int start, int target);
     float heuristic(int from, int to);
     vector<int> a_star(int start, int end);
+    int getNodesExplored();
 };
 
 
