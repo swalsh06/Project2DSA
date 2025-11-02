@@ -12,6 +12,7 @@
 
 using namespace std;
 
+// Constructor
 StarGroup::StarGroup(vector<string> lines, int numStars){
     int counter = 0;
 
@@ -50,10 +51,7 @@ StarGroup::StarGroup(vector<string> lines, int numStars){
     nodesExplored = 0;
 }
 
-double StarGroup::degToRad(double deg){
-    return deg * M_PI / 180.0;
-}
-
+//Calculates Euclidean distance
 double StarGroup::calcDistance(int i, int j){
   double dx = stars[i].getX() - stars[j].getX();
   double dy = stars[i].getY() - stars[j].getY();
@@ -61,9 +59,11 @@ double StarGroup::calcDistance(int i, int j){
   return sqrt(dx*dx + dy*dy + dz*dz);
 }
 
-map<int, vector<pair<int, float>>> StarGroup::getAdjacencyList() {
+
+unordered_map<int, vector<pair<int, float>>> StarGroup::getAdjacencyList() {
   return adjacencyList;
 }
+
 
 void StarGroup::printAdjacencyList() {
   for (const auto& [f, tv] : adjacencyList) {
@@ -73,6 +73,7 @@ void StarGroup::printAdjacencyList() {
     }
   }
 }
+
 void StarGroup::formAdjacencyList() {
   for(int i = 0; i < stars.size(); i++){
     for(int j = 0; j < stars.size(); j++){
@@ -87,16 +88,35 @@ void StarGroup::formAdjacencyList() {
   }
 }
 
+void StarGroup::formStarPositions() {
+    for (int i = 0; i < stars.size(); i++) {
+        starPositions[i] = {stars[i].getX(), stars[i].getY()};
+    }
+}
+
+unordered_map<int, pair<double, double>> StarGroup::getStarPositions() {
+    return starPositions;
+}
+
+
+void StarGroup::printStarPositions() {
+    for (const auto& [id, pos] : starPositions) {
+        cout << "Star " << id << " position -> ("
+             << pos.first << ", " << pos.second << ")\n";
+    }
+}
+
+// Dijkstra's algorithm
 // Returns shortest distances from start node to target node
-vector<int> StarGroup::dijkstra(const unordered_map<int, vector<pair<int,float>>>& graph, int start, int target){
+vector<int> StarGroup::dijkstra(int start, int target){
 
     unordered_map<int, float> dist;
     unordered_map<int, int> prev;
 
-    int infinity = numeric_limits<float>::infinity();;
+    double infinity = numeric_limits<double>::infinity();
 
     //set all distances to infinity
-    for (auto& pair : graph) {
+    for (auto& pair : adjacencyList) {
         dist[pair.first] = infinity;
     }
     dist[start] = 0;
@@ -114,7 +134,7 @@ vector<int> StarGroup::dijkstra(const unordered_map<int, vector<pair<int,float>>
             break;
         }// early stopping
 
-        for (auto neighbor: graph.at(u)) {
+        for (auto neighbor: adjacencyList.at(u)) {
             int v = neighbor.first;
             float weight = neighbor.second;
             float alt = d + weight;
@@ -142,15 +162,16 @@ vector<int> StarGroup::dijkstra(const unordered_map<int, vector<pair<int,float>>
     return path;
 };
 
-
-float StarGroup::heuristic(int from, int to, const unordered_map<int, pair<float,float>>& starPos) {
-    auto [x1,y1] = starPos.at(from);
-    auto [x2,y2] = starPos.at(to);
+//heuristic for A*
+float StarGroup::heuristic(int from, int to) {
+    auto [x1,y1] = starPositions.at(from);
+    auto [x2,y2] = starPositions.at(to);
     return sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2));
 }
 
+// A* algorithm
 // Returns shortest distances from start node to target node using heuristic
-vector<int> StarGroup::a_star(const unordered_map<int, vector<pair<int,float>>>& graph, const unordered_map<int, pair<float,float>>& starPos, int start, int end) {
+vector<int> StarGroup::a_star(int start, int end) {
 
     //gScore : dist from start so far
     //fScore : gScore + heuristic estimate to goal
@@ -158,14 +179,14 @@ vector<int> StarGroup::a_star(const unordered_map<int, vector<pair<int,float>>>&
     unordered_map<int,float> gScore;
     unordered_map<int,int> prev;
 
-    int infinity = numeric_limits<float>::infinity();;
+    double infinity = numeric_limits<double>::infinity();
 
-    for (auto& pair : graph) gScore[pair.first] = infinity;
+    for (auto& pair : adjacencyList) gScore[pair.first] = infinity;
     gScore[start] = 0;
 
     // Priority queue: {fScore, starID}
     priority_queue<pair<float,int>, vector<pair<float,int>>, greater<pair<float,int>>> pq;
-    pq.push({heuristic(start, end, starPos), start});
+    pq.push({heuristic(start, end), start});
 
     while (!pq.empty()) {
         auto [f, u] = pq.top();
@@ -175,12 +196,12 @@ vector<int> StarGroup::a_star(const unordered_map<int, vector<pair<int,float>>>&
         if (u == end) {
             break; // goal reached
         }
-        for (auto [v, weight] : graph.at(u)) {
+        for (auto [v, weight] : adjacencyList.at(u)) {
             float tentative_g = gScore[u] + weight;
             if (tentative_g < gScore[v]) {
                 gScore[v] = tentative_g;
                 prev[v] = u;
-                float fScore = tentative_g + heuristic(v, end, starPos);
+                float fScore = tentative_g + heuristic(v, end);
                 pq.push({fScore, v});
             }
         }

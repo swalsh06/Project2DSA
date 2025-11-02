@@ -7,25 +7,28 @@
 #include <vector>
 #include <cmath>
 #include <string>
-#include <map>
 #include <unordered_map>
 #include "star.h"
 using namespace std;
 
 class StarGroup {
     vector<Star> stars;
-    map<int, vector<pair<int, float>>> adjacencyList;
+    unordered_map<int, vector<pair<int, float>>> adjacencyList;
+    unordered_map<int, pair<double, double>> starPositions;
     int nodesExplored;
   public:
     StarGroup(vector<string> lines, int numStars);
     double degToRad(double deg);
-    map<int, vector<pair<int, float>>> getAdjacencyList();
+    unordered_map<int, vector<pair<int, float>>> getAdjacencyList();
     void printAdjacencyList();
     void formAdjacencyList();
+    unordered_map<int, pair<double, double>> getStarPositions();
+    void printStarPositions();
+    void formStarPositions();
     double calcDistance(int i, int j);
-    vector<int> dijkstra(const unordered_map<int, vector<pair<int,float>>>& graph, int start, int target);
-    float heuristic(int from, int to, const unordered_map<int, pair<float,float>>& starPos);
-    vector<int> a_star(const unordered_map<int, vector<pair<int,float>>>& graph, const unordered_map<int, pair<float,float>>& starPos, int start, int end);
+    vector<int> dijkstra(int start, int target);
+    float heuristic(int from, int to);
+    vector<int> a_star(int start, int end);
 };
 
 
