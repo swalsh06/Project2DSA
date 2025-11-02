@@ -1,4 +1,5 @@
 #include <cmath>
+#include <map>
 #include "StarGroup.h"
 #include <vector>
 #include <unordered_map>
@@ -6,12 +7,47 @@
 #include <queue>
 #include <algorithm>
 #include <iostream>
+#include <random>
+#include <algorithm>
 
 using namespace std;
 
-//Constructor
-StarGroup::StarGroup(vector<Star> s){
-  stars = s;
+// Constructor
+StarGroup::StarGroup(vector<string> lines, int numStars){
+    int counter = 0;
+
+    random_device rd;
+    mt19937 gen(rd());
+    vector<size_t> indices(lines.size());
+    iota(indices.begin(), indices.end(), 0);
+    shuffle(indices.begin(), indices.end(), gen);
+
+    for (int i = 0; i < numStars; i++) {
+        stringstream ss(lines[indices[i]]);
+        Star s;
+        string token;
+        getline(ss, token, ',');
+        s.setId(stoll(token));
+        getline(ss, token, ',');
+        s.setRa(stod(token));
+        getline(ss, token, ',');
+        s.setDec(stod(token));
+        getline(ss, token, ',');
+        s.setParallax(stod(token));
+
+        double distance = s.computeDistance();
+        double raRad = degToRad(s.getRa());
+        double decRad = degToRad(s.getDec());
+
+        s.setX(distance * cos(decRad) * cos(raRad));
+        s.setY(distance * cos(decRad) * sin(raRad));
+        s.setZ(distance * sin(decRad));
+        stars.push_back(s);
+
+        counter++;
+    }
+    formAdjacencyList();
+
     nodesExplored = 0;
 }
 

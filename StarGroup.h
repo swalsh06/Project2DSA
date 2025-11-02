@@ -17,7 +17,8 @@ class StarGroup {
     unordered_map<int, pair<double, double>> starPositions;
     int nodesExplored;
   public:
-    StarGroup(vector<Star> s);
+    StarGroup(vector<string> lines, int numStars);
+    double degToRad(double deg);
     unordered_map<int, vector<pair<int, float>>> getAdjacencyList();
     void printAdjacencyList();
     void formAdjacencyList();
