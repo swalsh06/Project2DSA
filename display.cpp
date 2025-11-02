@@ -35,15 +35,15 @@ Display::Display(const std::vector<Star>& dataStars)
   selectedAlgorithm(""),
   starCountInput(font,"", 16),
 starCountLabel(font, "", 16),
-numStars(200),                  // ✅ default
-  isTypingStarCount(false)        // ✅ default
+numStars(200),
+  isTypingStarCount(false)
 
 {
     this->dataStars = dataStars;
     window.setFramerateLimit(60);
     std::srand(static_cast<unsigned>(std::time(nullptr)));
 
-    if (!font.openFromFile("OpenSans.ttf")) {
+    if (!font.openFromFile("resources/OpenSans.ttf")) {
         std::cerr << "Failed to load font!" << std::endl;
     }
 
@@ -225,22 +225,22 @@ void Display::setupSidebar() {
     rand2Value.setPosition({120.f, 252.f});
     rand2Value.setString("");
 
-    //starCountLabel.setString("Number of Stars:", font, 16);
+    starCountLabel.setString("Number \n of Stars:");
     starCountLabel.setFillColor(sf::Color::Black);
     starCountLabel.setStyle(sf::Text::Bold);
-    starCountLabel.setPosition({20.f, 460.f});
+    starCountLabel.setPosition({20.f, 120.f});
 
     // Input box
-    inputBox.setSize({100.f, 30.f});
+    inputBox.setSize({80.f, 40.f});
     inputBox.setFillColor(sf::Color::White);
     inputBox.setOutlineColor(sf::Color::Black);
     inputBox.setOutlineThickness(1.f);
-    inputBox.setPosition({40.f, 490.f});
+    inputBox.setPosition({100.f, 120.f});
 
     // Text inside box
     //starCountInput = sf::Text(std::to_string(numStars), font, 16);
     starCountInput.setFillColor(sf::Color::Black);
-    starCountInput.setPosition({50.f, 493.f});
+    starCountInput.setPosition({110.f, 130.f});
 
 
 }
@@ -360,7 +360,7 @@ void Display::start() {
 
                 numStars = entered;
                 starCountInput.setString(std::to_string(numStars));
-                std::cout << "✅ Number of stars set to " << numStars << "\n";
+                std::cout << "Number of stars set to " << numStars << "\n";
             }
 
             isTypingStarCount = false;
