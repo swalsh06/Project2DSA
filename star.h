@@ -16,7 +16,7 @@ class Star {
     // parallax: apparent shift in position (milliarcseconds) - used to estimate distance
     double ra, dec, parallax;
     public:
-		Star();
+		Star(int c);
         void setId(long long id);
         void setNumId(int numId);
         void setX(double x);

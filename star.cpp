@@ -7,8 +7,9 @@
 #include "Star.h"
 using namespace std;
 
-Star::Star()
-    : id(0), numId(0), x(0), y(0), z(0), ra(0), dec(0), parallax(1) {}
+Star::Star(int c) {
+  numId = c;
+}
 
 
 void Star::setId(long long id){
