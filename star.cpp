@@ -10,8 +10,6 @@ using namespace std;
 Star::Star(int c) {
   numId = c;
 }
-
-
 void Star::setId(long long id){
   this->id = id;
 }
@@ -44,38 +42,38 @@ void Star::setParallax(double parallax){
   this->parallax = parallax;
 }
 
-long long Star::getId() const{
+long long Star::getId(){
   return id;
 }
 
-int Star::getNumId() const{
+int Star::getNumId(){
   return numId;
 }
 
-double Star::getX() const{
+double Star::getX(){
   return x;
 }
 
-double Star::getY() const {
+double Star::getY(){
   return y;
 }
 
-double Star::getZ() const {
+double Star::getZ(){
   return z;
 }
 
-double Star::getRa() const{
+double Star::getRa(){
   return ra;
 }
 
-double Star::getDec() const{
+double Star::getDec(){
   return dec;
 }
 
-double Star::getParallax() const{
+double Star::getParallax(){
   return parallax;
 }
 
-double Star::computeDistance() const{
+double Star::computeDistance(){
     return 1000.0 / parallax;
 }
