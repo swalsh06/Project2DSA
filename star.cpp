@@ -4,11 +4,11 @@
 #include <vector>
 #include <cmath>
 #include <string>
-#include "Star.h"
+#include "star.h"
 using namespace std;
 
 Star::Star(int c) {
-  numId = c;
+    numId = c;
 }
 
 Star::Star() {

@@ -50,7 +50,7 @@ Display::Display(const std::vector<std::string>& lines)
     window.setFramerateLimit(60);
     std::srand(static_cast<unsigned>(std::time(nullptr)));
 
-    if (!font.openFromFile("resources/OpenSans.ttf")) {
+    if (!font.openFromFile("OpenSans.ttf")) {
         std::cerr << "Failed to load font!" << std::endl;
     }
 
