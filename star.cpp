@@ -10,70 +10,78 @@ using namespace std;
 Star::Star(int c) {
   numId = c;
 }
+
+Star::Star() {
+    id = 0;
+    numId = 0;
+    x = y = z = 0.0;
+    ra = dec = parallax = 0.0;
+}
+
 void Star::setId(long long id){
-  this->id = id;
+    this->id = id;
 }
 
 void Star::setNumId(int numId){
-  this->numId = numId;
+    this->numId = numId;
 }
 
 void Star::setX(double x){
-  this->x = x;
+    this->x = x;
 }
 
 void Star::setY(double y){
-  this->y = y;
+    this->y = y;
 }
 
 void Star::setZ(double z){
-  this->z = z;
+    this->z = z;
 }
 
 void Star::setRa(double ra){
-  this->ra = ra;
+    this->ra = ra;
 }
 
 void Star::setDec(double dec){
-  this->dec = dec;
+    this->dec = dec;
 }
 
 void Star::setParallax(double parallax){
-  this->parallax = parallax;
+    this->parallax = parallax;
 }
 
-long long Star::getId(){
-  return id;
+long long Star::getId() const{
+    return id;
 }
 
-int Star::getNumId(){
-  return numId;
+int Star::getNumId() const{
+    return numId;
 }
 
-double Star::getX(){
-  return x;
+double Star::getX() const{
+    return x;
 }
 
-double Star::getY(){
-  return y;
+double Star::getY() const {
+    return y;
 }
 
-double Star::getZ(){
-  return z;
+double Star::getZ() const {
+    return z;
 }
 
-double Star::getRa(){
-  return ra;
+double Star::getRa() const{
+    return ra;
 }
 
-double Star::getDec(){
-  return dec;
+double Star::getDec() const{
+    return dec;
 }
 
-double Star::getParallax(){
-  return parallax;
+double Star::getParallax() const{
+    return parallax;
 }
 
-double Star::computeDistance(){
+double Star::computeDistance() const{
     return 1000.0 / parallax;
 }

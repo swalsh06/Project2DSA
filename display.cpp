@@ -1,6 +1,7 @@
 #include "display.h"
 #include <iostream>
 #include <iomanip>
+#include <algorithm>
 
 
 // ---------------- HELPER FUNCTION ----------------
@@ -18,7 +19,7 @@ sf::ConvexShape Display::makeStar(float radius, int points) {
 }
 
 // ---------------- CONSTRUCTOR ----------------
-Display::Display(const std::vector<Star>& dataStars)
+Display::Display(const std::vector<std::string>& lines)
 : window(sf::VideoMode({1200u, 600u}),
          "Constellation Connection",
          sf::State::Windowed),
@@ -32,115 +33,171 @@ Display::Display(const std::vector<Star>& dataStars)
   infoText(font, "", 14),
   rand1Value(font, "", 14),
   rand2Value(font, "", 14),
-  selectedAlgorithm(""),
-  starCountInput(font,"", 16),
-starCountLabel(font, "", 16),
-numStars(200),                  // ✅ default
-  isTypingStarCount(false)        // ✅ default
-
+  starCountInput(font, "", 16),
+  starCountLabel(font, "", 16)
 {
-    this->dataStars = dataStars;
+
+    rawLines = lines;
+    sg = new StarGroup(lines, 400);
+    dataStars = sg->getStars();
+    numStars = 400;
+    isTypingStarCount = false;
+    selectedAlgorithm = "";
+    generateActive = false;
+    startIndex = -1;
+    endIndex = -1;
+
     window.setFramerateLimit(60);
     std::srand(static_cast<unsigned>(std::time(nullptr)));
 
-    if (!font.openFromFile("OpenSans.ttf")) {
+    if (!font.openFromFile("resources/OpenSans.ttf")) {
         std::cerr << "Failed to load font!" << std::endl;
     }
 
-    setupStars(dataStars);
+    setupStars(numStars);
     setupSidebar();
 }
 
-// ---------------- STARS (BASED ON REAL DATA) ----------------
 
-void Display::setupStars(const std::vector<Star>& dataStars) {
+// ---------------- STARS (BASED ON REAL DATA) ----------------
+void Display::setupStars(int count) {
     stars.clear();
 
-    // find min/max to normalize all coordinates
-    double minX = 1e9, maxX = -1e9, minY = 1e9, maxY = -1e9;
-    for (const auto& s : dataStars) {
-        minX = std::min(minX, s.getX());
-        maxX = std::max(maxX, s.getX());
-        minY = std::min(minY, s.getY());
-        maxY = std::max(maxY, s.getY());
+    if (dataStars.empty()) {
+        std::cout << "No star data loaded!\n";
+        return;
     }
 
-    //  scale factors to fit stars within 1200x600 window
+    if (count < 0) count = numStars;
+    if (count > (int)dataStars.size()) count = (int)dataStars.size();
+
+
+    double minX = 1e9, maxX = -1e9, minY = 1e9, maxY = -1e9;
+    for (const auto& s : dataStars) {
+        if (s.getX() < minX) minX = s.getX();
+        if (s.getX() > maxX) maxX = s.getX();
+        if (s.getY() < minY) minY = s.getY();
+        if (s.getY() > maxY) maxY = s.getY();
+    }
+
     float scaleX = 950.f / static_cast<float>(maxX - minX);
     float scaleY = 550.f / static_cast<float>(maxY - minY);
 
-    //  convert each star's (x,y) to pixel coordinates
-    for (const auto& sData : dataStars) {
-        VisualStar s;
+    for (int i = 0; i < count; ++i) {
+        const auto& sData = dataStars[i];
+        VisualStar vs;
 
-        // Map coordinates to screen pixels
-        s.position = {
+        vs.position = {
             static_cast<float>((sData.getX() - minX) * scaleX + 225.f),
             static_cast<float>((sData.getY() - minY) * scaleY + 25.f)
         };
 
-
         float radius = 6.5f;
-        s.shape = makeStar(radius);
-        s.shape.setFillColor(sf::Color::White);
-        s.shape.setPosition(s.position);
+        vs.shape = makeStar(radius);
+        vs.shape.setFillColor(sf::Color::White);
+        vs.shape.setPosition(vs.position);
 
-        s.shadow.setRadius(radius * 1.8f);
-        s.shadow.setOrigin({radius * 1.8f, radius * 1.8f});
-        s.shadow.setFillColor(sf::Color(255, 255, 220, 20));
-        s.shadow.setPosition(s.position);
+        vs.shadow.setRadius(radius * 1.8f);
+        vs.shadow.setOrigin({radius * 1.8f, radius * 1.8f});
+        vs.shadow.setFillColor(sf::Color(255, 255, 220, 20));
+        vs.shadow.setPosition(vs.position);
 
-        s.twinklePhase = static_cast<float>(std::rand() % 360);
-        s.twinkleSpeed = 0.5f + static_cast<float>(std::rand() % 100) / 200.f;
+        vs.twinklePhase = static_cast<float>(std::rand() % 360);
+        vs.twinkleSpeed = 0.5f + static_cast<float>(std::rand() % 100) / 200.f;
 
-        stars.push_back(s);
+        stars.push_back(vs);
     }
 
     std::cout << "Loaded " << stars.size() << " stars into display.\n";
+
+    backgroundLines.clear();
+    backgroundLines.setPrimitiveType(sf::PrimitiveType::Lines);
+
+    if (sg) {
+        auto adj = sg->getAdjacencyList();
+        for (const auto& [from, neighbors] : adj) {
+            if (from >= stars.size()) continue;
+            for (const auto& [to, weight] : neighbors) {
+                if (to >= stars.size()) continue;
+                //if (weight > 30.0f) continue; // optional distance cutoff
+                backgroundLines.append(sf::Vertex(stars[from].position, sf::Color(100, 100, 100, 90)));
+                backgroundLines.append(sf::Vertex(stars[to].position, sf::Color(100, 100, 100, 90)));
+            }
+        }
+    }
 }
 
+// ---------------- RANDOM CONNECTION ----------------
 void Display::connectTwoRandomStars() {
-    if (stars.size() < 2) return;
+    if (!sg || stars.size() < 2) return;
 
-    // pick two random stars
-    int startIndex = std::rand() % stars.size();
-    int endIndex = std::rand() % stars.size();
-    while (endIndex == startIndex)
-        endIndex = std::rand() % stars.size();
+    // Try up to 5 times to find a connected pair of stars
+    int attempts = 0;
+    std::vector<int> pathIndices;
+    int nodes = 0;
 
-    // create red line
-    path = sf::VertexArray(sf::PrimitiveType::LineStrip);
-    path.append(sf::Vertex(stars[startIndex].position, sf::Color::Red));
-    path.append(sf::Vertex(stars[endIndex].position, sf::Color::Red));
+    do {
+        if (startIndex == -1 || endIndex == -1) {
+            startIndex = std::rand() % stars.size();
+            endIndex = std::rand() % stars.size();
+            while (endIndex == startIndex)
+                endIndex = std::rand() % stars.size();
+        }
+        if (selectedAlgorithm == "Dijkstra") {
+            pathIndices = sg->dijkstra(startIndex, endIndex);
+            dijkstraNodes = sg->getNodesExplored();
+        }
+        else if (selectedAlgorithm == "A* Search") {
+            pathIndices = sg->a_star(startIndex, endIndex);
+            aStarNodes = sg->getNodesExplored();
+        }
 
-    rand1Value.setString(std::to_string(startIndex));
-    rand2Value.setString(std::to_string(endIndex));
+        attempts++;
+    } while (pathIndices.empty() && attempts < 5);
 
-    // star data
-    auto s1 = dataStars[startIndex];
-    auto s2 = dataStars[endIndex];
+    if (pathIndices.empty()) {
+        std::cout << "No path found after 5 attempts\n";
+        return;
+    }
+
+    sf::Color pathColor = (selectedAlgorithm == "Dijkstra")
+        ? sf::Color(255, 140, 0)  // orange
+        : sf::Color::Red;
+
+    path.clear();
+    path.setPrimitiveType(sf::PrimitiveType::LineStrip);
+    for (int idx : pathIndices) {
+        if (idx >= 0 && idx < (int)stars.size())
+            path.append(sf::Vertex(stars[idx].position, pathColor));
+    }
+
+    stars[startIndex].shape.setFillColor(sf::Color::Green);
+    stars[endIndex].shape.setFillColor(sf::Color::Blue);
+
+    const auto& s1 = dataStars[startIndex];
+    const auto& s2 = dataStars[endIndex];
+    double dx = s1.getX() - s2.getX();
+    double dy = s1.getY() - s2.getY();
+    double dist = std::sqrt(dx * dx + dy * dy);
 
     std::ostringstream info;
     info << std::fixed << std::setprecision(2);
+    info << "Star 1: (" << s1.getX() << ", " << s1.getY() << ")\n";
+    info << "Star 2: (" << s2.getX() << ", " << s2.getY() << ")\n";
+    info << "Distance: " << dist << " pc\n";
 
-    info << "Star 1: ("
-         << s1.getX() << ", " << s1.getY() << ")\n";
-    info << "Star 2: ("
-         << s2.getX() << ", " << s2.getY() << ")\n";
-
-    // show distance between them
-    double dx = s1.getX() - s2.getX();
-    double dy = s1.getY() - s2.getY();
-    double dist = std::sqrt(dx*dx + dy*dy);
-    info << "Distance: " << std::fixed << std::setprecision(2) << dist << " pc";
+    if (aStarNodes != -1)
+        info << "A* nodes: " << aStarNodes << "\n";
+    if (dijkstraNodes != -1)
+        info << "Dijkstra nodes: " << dijkstraNodes << "\n";
 
     infoText.setString(info.str());
-
+    rand1Value.setString(std::to_string(startIndex));
+    rand2Value.setString(std::to_string(endIndex));
 }
 
 
-
-// ---------------- SIDEBAR SETUP ----------------
+// ---------------- SIDEBAR ----------------
 void Display::setupSidebar() {
     sidebar.setSize({200.f, 600.f});
     sidebar.setFillColor(sf::Color(180, 180, 200));
@@ -162,6 +219,7 @@ void Display::setupSidebar() {
     algo1Label.setFillColor(sf::Color::Black);
     algo1Label.setStyle(sf::Text::Bold);
     algo1Label.setPosition({28.f, 63.f});
+
     algo2Label.setString("A* Search");
     algo2Label.setFillColor(sf::Color::Black);
     algo2Label.setStyle(sf::Text::Bold);
@@ -200,49 +258,41 @@ void Display::setupSidebar() {
     generateLabel.setStyle(sf::Text::Bold);
     generateLabel.setPosition({60.f, 310.f});
 
-    // Info box area
     infoBox.setSize({150.f, 100.f});
     infoBox.setFillColor(sf::Color(230, 230, 240));
     infoBox.setOutlineColor(sf::Color::Black);
     infoBox.setOutlineThickness(1.f);
-    infoBox.setPosition({25.f, 390.f});
+    infoBox.setPosition({25.f, 395.f});
 
     infoText.setFont(font);
     infoText.setCharacterSize(14);
     infoText.setFillColor(sf::Color::Black);
     infoText.setPosition({30.f, 400.f});
-    infoText.setString("Star 1:\nStar 2:");
 
     rand1Value.setFont(font);
     rand1Value.setCharacterSize(20);
     rand1Value.setFillColor(sf::Color::Black);
     rand1Value.setPosition({120.f, 182.f});
-    rand1Value.setString("");
 
     rand2Value.setFont(font);
     rand2Value.setCharacterSize(20);
     rand2Value.setFillColor(sf::Color::Black);
     rand2Value.setPosition({120.f, 252.f});
-    rand2Value.setString("");
 
-    //starCountLabel.setString("Number of Stars:", font, 16);
+    starCountLabel.setString("Enter\nStars:");
     starCountLabel.setFillColor(sf::Color::Black);
     starCountLabel.setStyle(sf::Text::Bold);
-    starCountLabel.setPosition({20.f, 460.f});
+    starCountLabel.setPosition({20.f, 120.f});
 
-    // Input box
-    inputBox.setSize({100.f, 30.f});
+    inputBox.setSize({70.f, 30.f});
     inputBox.setFillColor(sf::Color::White);
     inputBox.setOutlineColor(sf::Color::Black);
     inputBox.setOutlineThickness(1.f);
-    inputBox.setPosition({40.f, 490.f});
+    inputBox.setPosition({100.f, 120.f});
 
-    // Text inside box
-    //starCountInput = sf::Text(std::to_string(numStars), font, 16);
     starCountInput.setFillColor(sf::Color::Black);
-    starCountInput.setPosition({50.f, 493.f});
-
-
+    starCountInput.setPosition({120.f, 123.f});
+    starCountInput.setCharacterSize(20);
 }
 
 // ---------------- DRAW ----------------
@@ -266,13 +316,11 @@ void Display::drawSidebar() {
     window.draw(starCountLabel);
     window.draw(inputBox);
     window.draw(starCountInput);
-
 }
 
-// ---------------- DRAW STARS ----------------
 void Display::drawStars() {
     float time = clock.getElapsedTime().asSeconds();
-
+    window.draw(backgroundLines);
     for (auto& s : stars) {
         float brightness = 170 + 85 * std::sin(time * s.twinkleSpeed * 4.0f + s.twinklePhase);
         uint8_t alpha = static_cast<uint8_t>(brightness);
@@ -286,96 +334,95 @@ void Display::drawStars() {
         window.draw(s.shadow);
         window.draw(s.shape);
     }
-
     window.draw(path);
 }
 
+// ---------------- MAIN LOOP ----------------
 void Display::start() {
     while (window.isOpen()) {
-        // ---------------- HANDLE EVENTS ----------------
         while (auto event = window.pollEvent()) {
-    if (event->is<sf::Event::Closed>())
-        window.close();
+            if (event->is<sf::Event::Closed>())
+                window.close();
 
-    // --- Handle Mouse Clicks ---
-    if (event->is<sf::Event::MouseButtonPressed>()) {
-        auto mouseEvent = event->getIf<sf::Event::MouseButtonPressed>();
-        sf::Vector2f mousePos = window.mapPixelToCoords({mouseEvent->position.x, mouseEvent->position.y});
+            // ------------------ Mouse Clicks ------------------
+            if (event->is<sf::Event::MouseButtonPressed>()) {
+                auto mouseEvent = event->getIf<sf::Event::MouseButtonPressed>();
+                sf::Vector2f mousePos = window.mapPixelToCoords({mouseEvent->position.x, mouseEvent->position.y});
 
-        // Input box focus
-        if (inputBox.getGlobalBounds().contains(mousePos)) {
-            isTypingStarCount = true;
-            inputBox.setOutlineColor(sf::Color(100, 100, 255)); // blue border
-        } else {
-            isTypingStarCount = false;
-            inputBox.setOutlineColor(sf::Color::Black);
-        }
+                if (inputBox.getGlobalBounds().contains(mousePos)) {
+                    isTypingStarCount = true;
+                    inputBox.setOutlineColor(sf::Color(100, 100, 255)); // blue
+                } else {
+                    isTypingStarCount = false;
+                    inputBox.setOutlineColor(sf::Color::Black);
+                }
+                // Algorithm selection
+                if (algo1Btn.getGlobalBounds().contains(mousePos)) {
+                    selectedAlgorithm = "Dijkstra";
+                    generateActive = false;
+                    std::cout << "Selected Dijkstra!\n";
+                } else if (algo2Btn.getGlobalBounds().contains(mousePos)) {
+                    selectedAlgorithm = "A* Search";
+                    generateActive = false;
+                    std::cout << "Selected A* Search!\n";
+                }
+                // Generate button
+                if (generateBtn.getGlobalBounds().contains(mousePos)) {
+                    if (!selectedAlgorithm.empty()) {
+                        generateActive = true;
+                        std::cout << "Generating " << numStars << " stars...\n";
+                        connectTwoRandomStars();
+                    } else {
+                        std::cout << "Please select an algorithm first!\n";
+                    }
+                }
+            }
 
-        // Generate button
-        if (generateBtn.getGlobalBounds().contains(mousePos)) {
-            if (!selectedAlgorithm.empty()) {
-                generateActive = true;
-                std::cout << "Generating " << numStars << " stars...\n";
-                connectTwoRandomStars();
-            } else {
-                std::cout << "Please select an algorithm first!\n";
+            // ------------------ Keyboard Typing ------------------
+            if (event->is<sf::Event::TextEntered>() && isTypingStarCount) {
+                auto textEvent = event->getIf<sf::Event::TextEntered>();
+                uint32_t unicode = textEvent->unicode;
+
+                if (unicode == 8) { // backspace
+                    std::string current = starCountInput.getString().toAnsiString();
+                    if (!current.empty()) current.pop_back();
+                    starCountInput.setString(current);
+                }
+                else if (unicode >= '0' && unicode <= '9') {
+                    std::string current = starCountInput.getString().toAnsiString();
+                    current += static_cast<char>(unicode);
+                    starCountInput.setString(current);
+                }
+                else if ((unicode == 13 || unicode == 10) && isTypingStarCount) {
+                    std::string input = starCountInput.getString().toAnsiString();
+                    if (!input.empty()) {
+                        int entered = std::stoi(input);
+                        numStars = std::clamp(entered, minStars, maxStars);
+
+                        delete sg;
+                        sg = new StarGroup(rawLines, numStars);
+                        dataStars = sg->getStars();
+
+                        setupStars(numStars);
+
+                        starCountInput.setString(std::to_string(numStars));
+
+                        startIndex = -1;
+                        endIndex = -1;
+                    }
+                    isTypingStarCount = false;
+                    inputBox.setOutlineColor(sf::Color::Black);
+                }
+
             }
         }
 
-        // Algorithm buttons
-        if (algo1Btn.getGlobalBounds().contains(mousePos)) {
-            selectedAlgorithm = "Dijkstra";
-            generateActive = false;
-            std::cout << "Selected Dijkstra!\n";
-        } else if (algo2Btn.getGlobalBounds().contains(mousePos)) {
-            selectedAlgorithm = "A* Search";
-            generateActive = false;
-            std::cout << "Selected A* Search!\n";
-        }
-    }
-
-    // --- Handle Keyboard Input ---
-    if (event->is<sf::Event::TextEntered>() && isTypingStarCount) {
-        auto textEvent = event->getIf<sf::Event::TextEntered>();
-        uint32_t unicode = textEvent->unicode;
-
-        if (unicode == 8) {  // backspace
-            std::string current = starCountInput.getString().toAnsiString();
-            if (!current.empty()) current.pop_back();
-            starCountInput.setString(current);
-        }
-        else if (unicode >= '0' && unicode <= '9') {  // digits only
-            std::string current = starCountInput.getString().toAnsiString();
-            current += static_cast<char>(unicode);
-            starCountInput.setString(current);
-        }
-        else if (unicode == 13) {  // enter key
-            std::string input = starCountInput.getString().toAnsiString();
-            if (!input.empty()) {
-                int entered = std::stoi(input);
-
-                // ✅ Limit between 20 and 500
-                if (entered < 20) entered = 20;
-                if (entered > 500) entered = 500;
-
-                numStars = entered;
-                starCountInput.setString(std::to_string(numStars));
-                std::cout << "✅ Number of stars set to " << numStars << "\n";
-            }
-
-            isTypingStarCount = false;
-            inputBox.setOutlineColor(sf::Color::Black);
-        }
-    }
-}
-
-
-        // ---------------- HOVER LOGIC  ----------------
+        // ---------------------- HOVER LOGIC -------------------------
         sf::Vector2i pixelPos = sf::Mouse::getPosition(window);
         sf::Vector2f worldPos = window.mapPixelToCoords(pixelPos);
 
-        sf::Color hoverColor(200, 200, 255);
         sf::Color normalColor(255, 255, 255);
+        sf::Color hoverColor(200, 200, 255);
         sf::Color selectedColor(150, 150, 255);
         sf::Color generateNormal(240, 240, 240);
 
@@ -389,36 +436,17 @@ void Display::start() {
         else if (selectedAlgorithm == "A* Search")
             algo2Btn.setFillColor(selectedColor);
 
-        // Highlight generate if active
-        if (generateActive)
-            generateBtn.setFillColor(selectedColor);
-
         if (algo1Btn.getGlobalBounds().contains(worldPos) && selectedAlgorithm != "Dijkstra")
             algo1Btn.setFillColor(hoverColor);
-
         if (algo2Btn.getGlobalBounds().contains(worldPos) && selectedAlgorithm != "A* Search")
             algo2Btn.setFillColor(hoverColor);
-
-        if (generateBtn.getGlobalBounds().contains(worldPos) && selectedAlgorithm != "Generate")
+        if (generateBtn.getGlobalBounds().contains(worldPos))
             generateBtn.setFillColor(hoverColor);
 
-        // ---------------- DRAW FRAME ----------------
+        // ------------------------- DRAW ----------------------------
         window.clear(sf::Color(5, 10, 30));
         drawSidebar();
         drawStars();
         window.display();
     }
 }
-
-// ---------------- PATH DRAWING ----------------
-void Display::setPath(const std::vector<int>& indices) {
-    path.clear();
-    for (int idx : indices) {
-        if (idx >= 0 && idx < static_cast<int>(stars.size())) {
-            path.append(sf::Vertex(stars[idx].position, sf::Color::Red));
-        }
-    }
-}
-
-
-

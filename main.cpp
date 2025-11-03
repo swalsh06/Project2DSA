@@ -8,10 +8,6 @@ using namespace std;
 int main() {
     // Set of 100,000 stars roughly in a sphere of radius 100 pc centered on the sun
     ifstream file("1761687300163O-result.csv");
-    // if (!file.is_open()) {
-    //     cerr << "Failed to open star dataset file!" << endl;
-    //     return 1;
-    // }
 
 
     vector<string> lines;
@@ -21,23 +17,17 @@ int main() {
         lines.push_back(line);
     }
     file.close();
-
-    int numStars = 400;
-
-
-    StarGroup sg1(lines, numStars);
+    std::cout << "Loaded " << lines.size() << " stars\n";
+    //int numStars = 400;
 
 
-    sg1.printAdjacencyList();
-    vector<Star> stars = sg1.getStars();
-
-    Display display(stars);
-    std::cout << "Loaded " << stars.size() << " stars\n";
+    //StarGroup sg1(lines, numStars);
 
 
-    // Temporary simulated Dijkstra result
-    std::vector<int> testPath = {2, 45, 77, 120, 300};
-    display.setPath(testPath);
+    // sg1.printAdjacencyList();
+    // vector<Star> stars = sg1.getStars();
+
+    Display display(lines);
 
     display.start();
     return 0;
