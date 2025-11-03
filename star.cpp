@@ -8,7 +8,7 @@
 using namespace std;
 
 Star::Star(int c) {
-    numId = c;
+  numId = c;
 }
 
 Star::Star() {
