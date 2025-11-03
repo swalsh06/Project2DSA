@@ -8,11 +8,11 @@
 #include <algorithm>
 #include <iostream>
 #include <random>
-#include <algorithm>
+#include <numeric>
+
 
 using namespace std;
 
-// Constructor
 StarGroup::StarGroup(vector<string> lines, int numStars){
     int counter = 0;
 
@@ -46,6 +46,7 @@ StarGroup::StarGroup(vector<string> lines, int numStars){
 
         counter++;
     }
+    formStarPositions();
     formAdjacencyList();
 
     nodesExplored = 0;
@@ -53,6 +54,10 @@ StarGroup::StarGroup(vector<string> lines, int numStars){
 
 double StarGroup::degToRad(double deg) {
     return deg * M_PI / 180.0;
+}
+
+vector<Star> StarGroup::getStars() {
+    return stars;
 }
 
 //Calculates Euclidean distance
@@ -83,24 +88,33 @@ vector<vector<Star>> StarGroup::getConnectedStars() {
 }
 
 void StarGroup::formAdjacencyList() {
-  for(int i = 0; i < stars.size(); i++){
-    for(int j = 0; j < stars.size(); j++){
-      // sg1 = whatever instance of StarGroup is being used
-      if (i != j){
-        float distance = calcDistance(i,j);
-        if(distance < 5.0){
-            adjacencyList[i].push_back({j, distance});
-            vector<Star> starPair;
-            starPair.push_back(stars[i]);
-            starPair.push_back(stars[j]);
-            connectedStars.push_back(starPair);
-        }
-      }
+    adjacencyList.clear();
+
+    for (int i = 0; i < (int)stars.size(); ++i) {
+        adjacencyList[i] = {};
     }
-  }
+
+    for (int i = 0; i < (int)stars.size(); ++i) {
+        for (int j = 0; j < (int)stars.size(); ++j) {
+            if (i != j) {
+                float distance = calcDistance(i, j);
+                float cutoff = 20.0f * std::sqrt(500.0f / stars.size());
+                if (distance < cutoff) {
+                    adjacencyList[i].push_back({j, distance});
+
+                    vector<Star> pair;
+                    pair.push_back(stars[i]);
+                    pair.push_back(stars[j]);
+                    connectedStars.push_back(pair);
+                }
+            }
+        }
+    }
 }
 
+
 void StarGroup::formStarPositions() {
+    starPositions.clear();
     for (int i = 0; i < stars.size(); i++) {
         starPositions[i] = {stars[i].getX(), stars[i].getY()};
     }
@@ -146,7 +160,7 @@ vector<int> StarGroup::dijkstra(int start, int target){
         if (u == target) {
             break;
         }// early stopping
-
+        if (!adjacencyList.count(u)) continue;
         for (auto neighbor: adjacencyList.at(u)) {
             int v = neighbor.first;
             float weight = neighbor.second;
@@ -177,6 +191,10 @@ vector<int> StarGroup::dijkstra(int start, int target){
 
 //heuristic for A*
 float StarGroup::heuristic(int from, int to) {
+    if (!starPositions.count(from) || !starPositions.count(to)) {
+        // fall back to 0 → still correct, just slower
+        return 0.0f;
+    }
     auto [x1,y1] = starPositions.at(from);
     auto [x2,y2] = starPositions.at(to);
     return sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2));
@@ -210,6 +228,7 @@ vector<int> StarGroup::a_star(int start, int end) {
         if (u == end) {
             break; // goal reached
         }
+        if (!adjacencyList.count(u)) continue;
         for (auto [v, weight] : adjacencyList.at(u)) {
             float tentative_g = gScore[u] + weight;
             if (tentative_g < gScore[v]) {

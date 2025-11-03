@@ -15,26 +15,27 @@ class Star {
     // dec: declination (sky latitude degrees)
     // parallax: apparent shift in position (milliarcseconds) - used to estimate distance
     double ra, dec, parallax;
-    public:
-		Star();
-        void setId(long long id);
-        void setNumId(int numId);
-        void setX(double x);
-        void setY(double y);
-        void setZ(double z);
-        void setRa(double ra);
-        void setDec(double dec);
-        void setParallax(double parallax);
-        long long getId() const;
-        int getNumId() const;
-        double getX() const;
-        double getY() const;
-        double getZ() const;
-        double getRa() const;
-        double getDec() const;
-        double getParallax() const;
+public:
+    Star();
+    Star(int c);
+    void setId(long long id);
+    void setNumId(int numId);
+    void setX(double x);
+    void setY(double y);
+    void setZ(double z);
+    void setRa(double ra);
+    void setDec(double dec);
+    void setParallax(double parallax);
+    long long getId() const;
+    int getNumId() const;
+    double getX() const;
+    double getY() const;
+    double getZ() const;
+    double getRa() const;
+    double getDec() const;
+    double getParallax() const;
 
-    	double computeDistance() const;
+    double computeDistance() const;
 };
 
 

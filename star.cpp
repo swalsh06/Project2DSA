@@ -4,75 +4,82 @@
 #include <vector>
 #include <cmath>
 #include <string>
-#include "Star.h"
+#include "star.h"
 using namespace std;
 
-Star::Star()
-    : id(0), numId(0), x(0), y(0), z(0), ra(0), dec(0), parallax(1) {}
+Star::Star(int c) {
+    numId = c;
+}
 
+Star::Star() {
+    id = 0;
+    numId = 0;
+    x = y = z = 0.0;
+    ra = dec = parallax = 0.0;
+}
 
 void Star::setId(long long id){
-  this->id = id;
+    this->id = id;
 }
 
 void Star::setNumId(int numId){
-  this->numId = numId;
+    this->numId = numId;
 }
 
 void Star::setX(double x){
-  this->x = x;
+    this->x = x;
 }
 
 void Star::setY(double y){
-  this->y = y;
+    this->y = y;
 }
 
 void Star::setZ(double z){
-  this->z = z;
+    this->z = z;
 }
 
 void Star::setRa(double ra){
-  this->ra = ra;
+    this->ra = ra;
 }
 
 void Star::setDec(double dec){
-  this->dec = dec;
+    this->dec = dec;
 }
 
 void Star::setParallax(double parallax){
-  this->parallax = parallax;
+    this->parallax = parallax;
 }
 
 long long Star::getId() const{
-  return id;
+    return id;
 }
 
 int Star::getNumId() const{
-  return numId;
+    return numId;
 }
 
 double Star::getX() const{
-  return x;
+    return x;
 }
 
 double Star::getY() const {
-  return y;
+    return y;
 }
 
 double Star::getZ() const {
-  return z;
+    return z;
 }
 
 double Star::getRa() const{
-  return ra;
+    return ra;
 }
 
 double Star::getDec() const{
-  return dec;
+    return dec;
 }
 
 double Star::getParallax() const{
-  return parallax;
+    return parallax;
 }
 
 double Star::computeDistance() const{
